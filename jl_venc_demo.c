@@ -1,3 +1,79 @@
+static sample_venc_rc_mad_attr g_mad_attr = {
+    .i_mad_thres = {{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255},
+                    {  0,   0,   0,   0,   3,   3,   5,   5,   8,   8,   8,  15,  15,  20,  25,  25}},
+    .p_mad_thres = {{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255},
+                    {  0,   0,   0,   0,   3,   3,   5,   5,   8,   8,   8,  15,  15,  20,  25,  25}},
+    .mad_origin_idx = {8, 6},
+};
+
+static sample_venc_rc_attr g_rc_attr = {
+    .bit_rate = {1024, 512},
+    .rc_mode = {JL_VENC_RC_MODE_CBR, JL_VENC_RC_MODE_VBR},
+    .stats_time = {1, 2},
+    .ip_qp_delta_base = {2, 5},
+    .mad_attr = &g_mad_attr,
+    .win_hor_width = {32, 48},
+    .win_ver_height = {32, 48},
+};
+
+static sample_venc_dyn_attr g_dyn_attr = {
+    .pic_width = {1280, 720},
+    .pic_hieght = {720, 480},
+    .profile = {0, 1},
+    .proto_type = {0, 1},
+    .pack_mode = {JL_VENC_PACK_MODE_SINGLE, JL_VENC_PACK_MODE_MULTI},
+    .stm_mode = {JL_VENC_STM_MODE_NALU, JL_VENC_STM_MODE_FRAME},
+    .rc_attr = &g_rc_attr,
+};
+
+static sample_venc_chn_config g_chn_config_normal = {
+    .chn_id = {0, 1},
+    .vpss_chn_id = {0, 1},
+    .chn_num = 2,
+    .user_send_flag = 1,
+    .dyn_chg_attr_flag = 1,
+    .dyn_point_start = 20,
+    .dyn_set_delta = 30,
+    .dyn_set_num = 3,
+    .dyn_attr = &g_dyn_attr,
+};
+
+static sample_venc_stream_thread_para g_stream_para = {
+    .thread_start = HI_FALSE,
+    .cnt = 0
+};
+static sample_venc_frame_thread_para g_frame_para = {
+    .thread_start = HI_FALSE,
+    .cnt = 0
+};
+static sample_venc_dynattr_thread_para g_dyn_attr_para = {
+    .thread_start = HI_FALSE,
+    .cnt = 0
+};
+
+static pthread_t g_stream_pid;
+static pthread_t g_frame_pid;
+static pthread_t g_dyn_attr_pid;
+static hi_bool g_sample_venc_exit = HI_FALSE;
+
+static hi_void sample_venc_usage_show_option(hi_void)
+{
+    printf("option:\n");
+    printf("\t  %d) H264.\n", SAMPLE_VENC_OPT_H264);
+    printf("\t  %d) H265.\n", SAMPLE_VENC_OPT_H265);
+    printf("\t  %d) SVAC3.0.\n", SAMPLE_VENC_OPT_SVAC3);
+}
+
+static hi_void sample_venc_usage(hi_char *s_prg_nm)
+{
+    printf("usage : %s [index] [options]\n", s_prg_nm);
+    printf("index:\n");
+    printf("\t  %d) normal encode.\n", SAMPLE_VENC_INDEX_NORMAL);
+    printf("\t  %d) smart encode.\n", SAMPLE_VENC_INDEX_SMART_ENC);
+    printf("\t  %d) aiseg encode.\n", SAMPLE_VENC_INDEX_AISEG);
+    sample_venc_usage_show_option();
+}
+
 static hi_s32 sample_venc_get_and_save_stream(td_s32 chn_id, sample_venc_chn_config* p_chn_config,
     sample_venc_stream_thread_para *stm_thread_ctx)
 {
