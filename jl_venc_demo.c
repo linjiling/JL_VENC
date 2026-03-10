@@ -1,3 +1,64 @@
+hi_void *sample_venc_dyn_attr_thread(hi_void *p)
+{
+    sample_venc_dynattr_thread_para *dyn_attr_ctx = (sample_venc_dynattr_thread_para *)p;
+    sample_venc_chn_config* p_chn_config = HI_NULL;
+    hi_s32 dyn_set_num = 0;
+    hi_s32 ret;
+    hi_s32 z;
+    hi_u64 dyn_set_point = 0;
+    jl_venc_chn_status stat;
+
+    if (dyn_attr_ctx->sample_mode == SAMPLE_VENC_INDEX_NORMAL) {
+        p_chn_config = &g_chn_config_normal;
+    }
+
+    dyn_set_point = p_chn_config->dyn_point_start;
+    while (dyn_attr_ctx->thread_start == HI_TRUE && dyn_set_num < p_chn_config->dyn_set_num) {
+        for (z = 0; z < p_chn_config->chn_num; z++) {
+            if (p_chn_config->dyn_in_idle_flag) {
+                ret = jl_mpi_venc_query_status(p_chn_config->chn_id[z], &stat);
+                if (ret != HI_SUCCESS) {
+                    printf("query status chn[%d] failed with %#x!\n", p_chn_config->chn_id[z], ret);
+                    break;
+                }
+                if (stat.enc_succ_frame_cnt >= dyn_set_point) {
+                    ret = jl_mpi_venc_stop_chn(p_chn_config->chn_id[z]);
+                    if (ret != HI_SUCCESS) {
+                        printf("stop chn fail with ret %d!\n", ret);
+                        break;
+                    }
+                    ret = jl_mpi_venc_reset_chn(p_chn_config->chn_id[z]);
+                    if (ret != HI_SUCCESS) {
+                        printf("reset chn fail with ret %d!\n", ret);
+                        break;
+                    }
+
+                    sample_venc_set_static_attr(p_chn_config, p_chn_config->chn_id[z], dyn_set_num);
+
+                    ret = jl_mpi_venc_prepare_chn(p_chn_config->chn_id[z]);
+                    if (ret != HI_SUCCESS) {
+                        printf("prepare chn fail with ret %d!\n", ret);
+                        break;
+                    }
+
+                    ret = jl_mpi_venc_start_chn(p_chn_config->chn_id[z]);
+                    if (ret != HI_SUCCESS) {
+                        printf("start chn fail with ret %d!\n", ret);
+                        break;
+                    }
+                }
+            } else {
+                sample_venc_set_dyn_attr(p_chn_config, p_chn_config->chn_id[z], dyn_set_num);
+            }
+        }
+        if (z == p_chn_config->chn_num) {
+            dyn_set_num++;
+            dyn_set_point += p_chn_config->dyn_set_delta;
+        }
+    }
+    return HI_NULL;
+}
+
 static hi_s32 sample_venc_init_other_module()
 {
     sample_sns_type sns_type = 0;
