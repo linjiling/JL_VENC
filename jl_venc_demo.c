@@ -1,3 +1,102 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <signal.h>
+#include <sys/select.h>
+
+#include "securec.h"
+#include "hi_common.h"
+#include "hi_defines.h"
+#include "sample_comm.h"
+#include "jl_mpi_venc.h"
+
+/*********************************************************************************/
+/* sample测试VENC功能汇总:                                                        */
+/* 1. 异步编码机制，送帧与收流单独线程                                              */
+/* 2. 多路编码机制，多通道实现多路                                                  */
+/* 3. slect多路复用获取码流机制                                                    */
+/* 4. 动态设置编码参数(静态参数)：切换分别率                                         */
+/* 5. 动态设置编码参数(动态参数)：切换收流模式                                       */
+/*********************************************************************************/
+
+#define SAMPLE_MAX_CHN_NUM 8
+#define SAMPLE_MAX_DYN_ATTR_NUM 8
+
+typedef enum {
+    SAMPLE_VENC_INDEX_NORMAL = 0,
+    SAMPLE_VENC_INDEX_SMART_ENC,
+    SAMPLE_VENC_INDEX_AISEG,
+} sample_venc_index_type;
+
+typedef enum {
+    SAMPLE_VENC_OPT_H264 = 0,
+    SAMPLE_VENC_OPT_H265,
+    SAMPLE_VENC_OPT_SVAC3
+} sample_venc_option_1;
+
+typedef struct {
+    td_u32 i_mad_thres[SAMPLE_MAX_DYN_ATTR_NUM][16];
+    td_u32 p_mad_thres[SAMPLE_MAX_DYN_ATTR_NUM][16];
+    td_u32 b_mad_thres[SAMPLE_MAX_DYN_ATTR_NUM][16];
+    td_u32 mad_origin_idx[SAMPLE_MAX_DYN_ATTR_NUM];
+} sample_venc_rc_mad_attr;
+
+typedef struct {
+    jl_venc_rc_mode rc_mode[SAMPLE_MAX_DYN_ATTR_NUM];
+    td_u32 bit_rate[SAMPLE_MAX_DYN_ATTR_NUM];
+    td_u32 stats_time[SAMPLE_MAX_DYN_ATTR_NUM];
+    td_u32 ip_qp_delta_base[SAMPLE_MAX_DYN_ATTR_NUM];
+    sample_venc_rc_mad_attr *mad_attr;
+    td_u32 win_hor_width[SAMPLE_MAX_DYN_ATTR_NUM];
+    td_u32 win_ver_height[SAMPLE_MAX_DYN_ATTR_NUM];
+} sample_venc_rc_attr;
+
+typedef struct {
+    // 静态参数
+    hi_s32 pic_width[SAMPLE_MAX_DYN_ATTR_NUM];
+    hi_s32 pic_hieght[SAMPLE_MAX_DYN_ATTR_NUM];
+    ot_payload_type proto_type[SAMPLE_MAX_DYN_ATTR_NUM];
+    td_u32 profile[SAMPLE_MAX_DYN_ATTR_NUM];
+    jl_venc_pack_mode pack_mode[SAMPLE_MAX_DYN_ATTR_NUM];
+    // 动态参数
+    jl_venc_stm_mode stm_mode[SAMPLE_MAX_DYN_ATTR_NUM];
+    sample_venc_rc_attr *rc_attr;
+} sample_venc_dyn_attr;
+
+typedef struct {
+    hi_venc_chn chn_id[SAMPLE_MAX_CHN_NUM];
+    hi_vpss_chn vpss_chn_id[SAMPLE_MAX_CHN_NUM];
+    td_s32 chn_num;
+    hi_bool user_send_flag;
+    hi_bool dyn_chg_attr_flag;
+    hi_s32 dyn_point_start;
+    hi_s32 dyn_set_delta;
+    hi_s32 dyn_set_num;
+    hi_bool dyn_in_idle_flag;
+    sample_venc_dyn_attr *dyn_attr;
+} sample_venc_chn_config;
+
+typedef struct {
+    volatile hi_bool thread_start;
+    hi_s32 cnt;
+    hi_s32 sample_mode;
+    hi_s32 venc_fd[SAMPLE_MAX_CHN_NUM];
+} sample_venc_stream_thread_para;
+
+typedef struct {
+    volatile hi_bool thread_start;
+    hi_s32 cnt;
+    hi_s32 sample_mode;
+} sample_venc_frame_thread_para;
+
+typedef struct {
+    volatile hi_bool thread_start;
+    hi_s32 cnt;
+    hi_s32 sample_mode;
+} sample_venc_dynattr_thread_para;
+
 static sample_venc_rc_mad_attr g_mad_attr = {
     .i_mad_thres = {{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255},
                     {  0,   0,   0,   0,   3,   3,   5,   5,   8,   8,   8,  15,  15,  20,  25,  25}},
