@@ -1,3 +1,176 @@
+static hi_s32 sample_venc_get_and_save_stream(td_s32 chn_id, sample_venc_chn_config* p_chn_config,
+    sample_venc_stream_thread_para *stm_thread_ctx)
+{
+    jl_venc_stream stream;
+    jl_venc_chn_status stat;
+    hi_s32 ret = HI_SUCCESS;
+
+    if (memset_s(&stream, sizeof(stream), 0, sizeof(stream)) != EOK) {
+        printf("call memset_s error\n");
+        return HI_FAILURE;
+    }
+
+    ret = jl_mpi_venc_query_status(chn_id, &stat);
+    if (ret != HI_SUCCESS) {
+        printf("query status chn[%d] failed with %#x!\n", chn_id, ret);
+        return ret;
+    }
+
+    if (stat.cur_packs == 0) {
+        return HI_SUCCESS;
+    }
+
+    stream.p_pack = (jl_venc_pack *)malloc(sizeof(jl_venc_pack) * stat.cur_packs);
+    if (stream.p_pack == HI_NULL) {
+        printf("malloc stream pack failed!\n");
+        return HI_FAILURE;
+    }
+
+    stream.pack_cnt = stat.cur_packs;
+    ret = jl_mpi_venc_get_stream(chn_id, &stream, 0);
+    if (ret != HI_SUCCESS) {
+        printf("get stream failed with %#x!\n", ret);
+        goto err_out;
+    }
+
+    ret = jl_mpi_venc_release_stream(chn_id, &stream);
+    if (ret != HI_SUCCESS) {
+        printf("release stream failed with %#x!\n", ret);
+    }
+
+err_out:
+    free(stream.p_pack);
+    return ret;
+}
+
+static hi_void *sample_venc_get_stream_thread(hi_void *p)
+{
+    sample_venc_stream_thread_para *stm_thread_ctx = (sample_venc_stream_thread_para *)p;
+    sample_venc_chn_config* p_chn_config = HI_NULL;
+    fd_set stream_fds;
+    hi_s32 i, j, z;
+    hi_s32 ret;
+    hi_s32 max_fd = 0;
+    struct timeval timeout_val = {0};
+
+    if (stm_thread_ctx->sample_mode == SAMPLE_VENC_INDEX_NORMAL) {
+        p_chn_config = &g_chn_config_normal;
+    }
+
+    for (i = 0; i < p_chn_config->chn_num; i++) {
+        ret = jl_mpi_venc_get_fd(i, &stm_thread_ctx->venc_fd[i]);
+        if (ret != HI_SUCCESS) {
+            printf("get chn fd with ret %d!\n", ret);
+            goto err_out;
+        }
+        if (stm_thread_ctx->venc_fd[i] > max_fd) {
+            max_fd = stm_thread_ctx->venc_fd[i];
+        }
+    }
+
+    while (stm_thread_ctx->thread_start == HI_TRUE) {
+        FD_ZERO(&stream_fds);
+        for (z = 0; z < p_chn_config->chn_num; z++) {
+            FD_SET(stm_thread_ctx->venc_fd[i], &stream_fds);
+        }
+        timeout_val.tv_sec = 2; /* 2 is a number */
+        timeout_val.tv_usec = 0;
+        ret = select(max_fd + 1, &stream_fds, HI_NULL, HI_NULL, &timeout_val);
+        if (ret < 0) {
+            printf("select failed!\n");
+            break;
+        } else if (ret == 0) {
+            printf("get venc stream time out, try again!\n");
+            continue;
+        } else {
+            for (z = 0; z < p_chn_config->chn_num; z++) {
+                if (FD_ISSET(stm_thread_ctx->venc_fd[i], &stream_fds)) {
+                    ret = sample_venc_get_and_save_stream(p_chn_config->chn_id[z], p_chn_config, stm_thread_ctx);
+                    if (ret != HI_SUCCESS) {
+                        printf("get stream with ret %d!\n", ret);
+                        goto err_out;
+                    }
+                }
+            }
+        }
+    }
+err_out:
+    for (j = 0; j < i; j++) {
+        close(stm_thread_ctx->venc_fd[j]);
+    }
+    return HI_NULL;
+}
+
+hi_void *sample_venc_send_frame_thread(hi_void *p)
+{
+    sample_venc_frame_thread_para *stm_frame_ctx = (sample_venc_frame_thread_para *)p;
+    sample_venc_chn_config* p_chn_config = HI_NULL;
+    hi_s32 ret;
+    hi_s32 z;
+    jl_venc_frame frame;
+
+    if (stm_frame_ctx->sample_mode == SAMPLE_VENC_INDEX_NORMAL) {
+        p_chn_config = &g_chn_config_normal;
+    }
+
+    while (stm_frame_ctx->thread_start == HI_TRUE) {
+        for (z = 0; z < p_chn_config->chn_num; z++) {
+            ret = jl_mpi_venc_send_frame(p_chn_config->chn_id[z], &frame, 1000); /* 1000 is a number */
+            if (ret != HI_SUCCESS) {
+                printf("send frame failed with ret %d\n", ret);
+            }
+        }
+    }
+    return HI_NULL;
+}
+
+hi_s32 sample_venc_set_static_attr(sample_venc_chn_config* p_chn_config, hi_s32 chn_id, hi_s32 dyn_set_num)
+{
+    jl_venc_stat_attr attr;
+    hi_s32 ret;
+    ret = jl_mpi_venc_get_static_attr(chn_id, &attr);
+    if (ret != HI_SUCCESS) {
+        printf("get static attr fail with ret %d!\n", ret);
+        return HI_FAILURE;
+    }
+    attr.pic_width = p_chn_config->dyn_attr->pic_width[dyn_set_num];
+    attr.pic_height = p_chn_config->dyn_attr->pic_hieght[dyn_set_num];
+    attr.type = p_chn_config->dyn_attr->proto_type[dyn_set_num];
+    attr.profile = p_chn_config->dyn_attr->profile[dyn_set_num];
+    attr.pack_mode = p_chn_config->dyn_attr->pack_mode[dyn_set_num];
+    ret = jl_mpi_venc_set_static_attr(chn_id, &attr);
+    if (ret != HI_SUCCESS) {
+        printf("set static attr fail with ret %d!\n", ret);
+        return HI_FAILURE;
+    }
+    return HI_SUCCESS;
+}
+
+hi_s32 sample_venc_set_dyn_attr(sample_venc_chn_config* p_chn_config, hi_s32 chn_id, hi_s32 dyn_set_num)
+{
+    jl_venc_dyn_attr attr;
+    hi_s32 ret;
+    ret = jl_mpi_venc_get_dyn_attr(chn_id, &attr);
+    if (ret != HI_SUCCESS) {
+        printf("get dyn attr fail with ret %d!\n", ret);
+        return HI_FAILURE;
+    }
+    attr.stm_mode = p_chn_config->dyn_attr->stm_mode[dyn_set_num];
+    attr.rc_attr.bit_rate = p_chn_config->dyn_attr->rc_attr->bit_rate[dyn_set_num];
+    attr.rc_attr.rc_mode = p_chn_config->dyn_attr->rc_attr->rc_mode[dyn_set_num];
+    attr.rc_attr.stats_time = p_chn_config->dyn_attr->rc_attr->stats_time[dyn_set_num];
+    attr.rc_attr.ip_qp_delta_base = p_chn_config->dyn_attr->rc_attr->ip_qp_delta_base[dyn_set_num];
+    attr.rc_attr.mad_attr.mad_origin_idx = p_chn_config->dyn_attr->rc_attr->mad_attr->mad_origin_idx[dyn_set_num];
+    attr.rc_attr.sc_window.hor_width = p_chn_config->dyn_attr->rc_attr->win_hor_width[dyn_set_num];
+    attr.rc_attr.sc_window.ver_height = p_chn_config->dyn_attr->rc_attr->win_ver_height[dyn_set_num];
+    ret = jl_mpi_venc_set_dyn_attr(chn_id, &attr);
+    if (ret != HI_SUCCESS) {
+        printf("set dyn attr fail with ret %d!\n", ret);
+        return HI_FAILURE;
+    }
+    return HI_SUCCESS;
+}
+
 hi_void *sample_venc_dyn_attr_thread(hi_void *p)
 {
     sample_venc_dynattr_thread_para *dyn_attr_ctx = (sample_venc_dynattr_thread_para *)p;
