@@ -38,12 +38,17 @@ td_bool jl_hal_sse_support(td_s32 chn_id);
 /* vedu内存计算接口 */
 td_u32 jl_hal_get_ai_mask_stride(td_s32 chn_id, td_u32 pic_width);
 
-/* vedu寄存器Node内存操作接口 */
+/***************************vedu寄存器Node内存操作接口************************************************/
 td_void jl_hal_init_regs_node(td_s32 chn_id);
 td_void jl_hal_update_regs_node(td_s32 chn_id);
 td_void jl_hal_read_regs_node(td_s32 chn_id);
+/****************************************************************************************************/
 
-/* vedu寄存器直接操作接口 */
+/*****************************vedu寄存器直接操作接口*************************************************/
+/* 启动vedu逻辑开始编码 */
 td_u32 jl_hal_start_vedu(td_s32 chn_id, td_u32 vpu_id, td_u32 reg_id);
+/* 复位vedu寄存器，通过操作时钟控制寄存器方式实现 */
 td_u32 jl_hal_reset_vedu(td_s32 chn_id, td_u32 vpu_id, td_u32 reg_id);
+/* 读取vedu中断状态寄存器，判断中断类别和相关信息 */
 td_u32 jl_hal_read_int_status(td_s32 chn_id, td_u32 vpu_id, td_u32 reg_id, jl_vedu_status *enc_statu);
+/****************************************************************************************************/
