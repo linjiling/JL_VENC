@@ -26,7 +26,17 @@ typedef struct {
     td_u16 bus_err : 1;
     td_u16 low_delay_ok : 1;
     td_u16 reserved : 1;
-} jl_vedu_status;
+} jl_vedu_int_status;
+
+typedef enum {
+    VEDU_WORK_DONE = 0,
+    VEDU_WORK_TIMEOUT,
+} jl_vedu_work_status;
+
+typedef enum {
+    VEDU_INT_NORMAL = 0,
+    VEDU_INT_ERROR,
+} jl_vedu_int_type;
 
 td_s32 jl_hal_create_chn(td_s32 chn_id, jl_hal_attr *attr);
 td_s32 jl_hal_reset_chn(td_s32 chn_id);
@@ -47,8 +57,13 @@ td_void jl_hal_read_regs_node(td_s32 chn_id);
 /*****************************vedu寄存器直接操作接口*************************************************/
 /* 启动vedu逻辑开始编码 */
 td_u32 jl_hal_start_vedu(td_s32 chn_id, td_u32 vpu_id, td_u32 reg_id);
-/* 复位vedu寄存器，通过操作时钟控制寄存器方式实现 */
+/* 复位vedu寄存器，通过操作时钟控制寄存器方式实现，当出现vedu死机或者其他需要复位的情况时使用 */
 td_u32 jl_hal_reset_vedu(td_s32 chn_id, td_u32 vpu_id, td_u32 reg_id);
-/* 读取vedu中断状态寄存器，判断中断类别和相关信息 */
-td_u32 jl_hal_read_int_status(td_s32 chn_id, td_u32 vpu_id, td_u32 reg_id, jl_vedu_status *enc_statu);
+/* 读取当前中断所匹配的寄存器id号，通过中断状态或者通道状态来判断，当vedu死机时只能通过通道状态判断，vedu_status表示vedu工作状态 */
+td_s32 jl_hal_read_reg_id(td_s32 vpu_id, jl_vedu_work_status vedu_status);
+/* 读取某vedu某reg_id对应的中断状态寄存器，判断中断类别和相关信息 */
+td_u32 jl_hal_read_int_status(td_s32 chn_id, td_u32 vpu_id, td_u32 reg_id, jl_vedu_int_status *int_status);
+/* 清除某vedu某reg_id对应的中断, 清正常中断和错误中断清除时间可能不同，因此设置了清除中断类型 */
+td_s32 jl_hal_clear_int(td_s32 vpu_id, td_s32 reg_id, jl_vedu_int_type int_type, jl_vedu_int_status int_status);
+/* */
 /****************************************************************************************************/
