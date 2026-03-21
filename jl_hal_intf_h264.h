@@ -38,6 +38,11 @@ typedef enum {
     VEDU_INT_ERROR,
 } jl_vedu_int_type;
 
+typedef enum {
+    VEDU_CLK_ON = 0,
+    VEDU_CLK_OFF,
+} jl_vedu_clk_ctrl;
+
 td_s32 jl_hal_create_chn(td_s32 chn_id, jl_hal_attr *attr);
 td_s32 jl_hal_reset_chn(td_s32 chn_id);
 td_s32 jl_hal_destroy_chn(td_s32 chn_id);
@@ -65,5 +70,6 @@ td_s32 jl_hal_read_reg_id(td_s32 vpu_id, jl_vedu_work_status vedu_status);
 td_u32 jl_hal_read_int_status(td_s32 chn_id, td_u32 vpu_id, td_u32 reg_id, jl_vedu_int_status *int_status);
 /* 清除某vedu某reg_id对应的中断, 清正常中断和错误中断清除时间可能不同，因此设置了清除中断类型 */
 td_s32 jl_hal_clear_int(td_s32 vpu_id, td_s32 reg_id, jl_vedu_int_type int_type, jl_vedu_int_status int_status);
-/* */
+/* vedu开关时钟，相当上下电 */
+td_s32 jl_hal_clk_ctrl(td_s32 vpu_id, jl_vedu_clk_ctrl clk_ctrl);
 /****************************************************************************************************/
