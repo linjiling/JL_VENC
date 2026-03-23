@@ -34,6 +34,11 @@ typedef enum {
 } jl_vedu_work_status;
 
 typedef enum {
+    VEDU_WORK_BUSY = 0,
+    VEDU_WORK_IDLE,
+} jl_vedu_reg_chn_status;
+
+typedef enum {
     VEDU_INT_NORMAL = 0,
     VEDU_INT_ERROR,
 } jl_vedu_int_type;
@@ -72,4 +77,12 @@ td_u32 jl_hal_read_int_status(td_s32 chn_id, td_u32 vpu_id, td_u32 reg_id, jl_ve
 td_s32 jl_hal_clear_int(td_s32 vpu_id, td_s32 reg_id, jl_vedu_int_type int_type, jl_vedu_int_status int_status);
 /* vedu开关时钟，相当上下电 */
 td_s32 jl_hal_clk_ctrl(td_s32 vpu_id, jl_vedu_clk_ctrl clk_ctrl);
+/* 打印vedu所有寄存器值, vedu死机或超时时打印寄存器便于调试 */
+td_s32 jl_hal_print_all_reg_value(td_s32 vpu_id);
+/* 设置vedu超时时间， vedu会根据此值上报超时中断 */
+td_s32 jl_hal_set_vedu_timeout_value(td_s32 vpu_id, td_s32 time_out);
+/* 获取vedu当前的超时时间 */
+td_s32 jl_hal_set_vedu_timeout_value(td_s32 vpu_id, td_s32 reg_id, td_s32 *time_out);
+/* 读取当前vedu寄存器通道，这里的寄存器通道是多套寄存器中的某一套 */
+td_bool jl_hal_read_regchn_status(td_s32 vpu_id, jl_vedu_reg_chn_status *chn_status);
 /****************************************************************************************************/
