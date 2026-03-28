@@ -21,4 +21,33 @@ typedef union {
 
 } u_vedu_vcpi_intmask0;
 
+/* Define the union U_VEDU_VCPI_SW_L0_SIZE */
+typedef union {
+    /* Define the struct bits */
+    struct {
+        unsigned int    vcpi_sw_l0_width     : 7  ;     /* [6:0] */
+        unsigned int    reserved_1           : 9  ;     /* [15:7] */
+        unsigned int    vcpi_sw_l0_height    : 6  ;     /* [21:16] */
+        unsigned int    reserved_0           : 10  ;    /* [31:22] */
+    } bits;
+
+    /* Define an unsigned member */
+    unsigned int u32;
+
+} u_vedu_vcpi_sw_l0_size;
+
+/* Define the union U_VEDU_VCPI_SW_L1_SIZE */
+typedef union {
+    /* Define the struct bits */
+    struct {
+        unsigned int    vcpi_sw_l1_width     : 7  ;     /* [6:0] */
+        unsigned int    reserved_1           : 9  ;     /* [15:7] */
+        unsigned int    vcpi_sw_l1_height    : 6  ;     /* [21:16] */
+        unsigned int    reserved_0           : 10  ;    /* [31:22] */
+    } bits;
+
+    /* Define an unsigned member */
+    unsigned int u32;
+
+} u_vedu_vcpi_sw_l1_size;
 #endif
