@@ -58,20 +58,20 @@ td_s32 jl_mpi_venc_send_frame(ot_venc_chn chn, const jl_venc_frame *frame, td_s3
     return TD_SUCCESS;
 }
 
-td_s32 jl_mpi_venc_set_static_attr(ot_venc_chn chn, const jl_venc_stat_attr *attr)
+td_s32 jl_mpi_venc_set_base_attr(ot_venc_chn chn, const jl_venc_base_attr *attr)
 {
     return TD_SUCCESS;
 }
-td_s32 jl_mpi_venc_get_static_attr(ot_venc_chn chn, jl_venc_stat_attr *attr)
+td_s32 jl_mpi_venc_get_base_attr(ot_venc_chn chn, jl_venc_base_attr *attr)
 {
     return TD_SUCCESS;
 }
 
-td_s32 jl_mpi_venc_set_dyn_attr(ot_venc_chn chn, const jl_venc_dyn_attr *attr)
+td_s32 jl_mpi_venc_set_base_param(ot_venc_chn chn, const jl_venc_base_param *param)
 {
     return TD_SUCCESS;
 }
-td_s32 jl_mpi_venc_get_dyn_attr(ot_venc_chn chn, jl_venc_dyn_attr *attr)
+td_s32 jl_mpi_venc_get_base_param(ot_venc_chn chn, jl_venc_base_param *param)
 {
     return TD_SUCCESS;
 }
