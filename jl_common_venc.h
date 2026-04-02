@@ -221,14 +221,14 @@ typedef enum {
     JL_VENC_REF_MODE_OPEN_GRP = 0,
     JL_VENC_REF_MODE_CLOSE_GRP = 1,
     JL_VENC_REF_MODE_MODE_BUTT
-} jl_venc_ext_ref_mode;
+} jl_venc_adv_ref_mode;
 
 typedef struct {
     td_bool ext_ref_en;
-    td_u32 base_interval;
-    td_u32 second_interval;
-    jl_venc_ext_ref_mode ref_mode;
-} jl_venc_ext_ref_attr;
+    td_u32 l1_interval;
+    td_u32 l2_interval;
+    jl_venc_adv_ref_mode ref_mode;
+} jl_venc_adv_ref_attr;
 
 typedef enum {
     JL_VENC_AISEG_MODE_POINT = 0,
