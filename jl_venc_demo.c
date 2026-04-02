@@ -301,9 +301,9 @@ hi_void *sample_venc_send_frame_thread(hi_void *p)
 
 hi_s32 sample_venc_set_static_attr(sample_venc_chn_config* p_chn_config, hi_s32 chn_id, hi_s32 dyn_set_num)
 {
-    jl_venc_stat_attr attr;
+    jl_venc_base_attr attr;
     hi_s32 ret;
-    ret = jl_mpi_venc_get_static_attr(chn_id, &attr);
+    ret = jl_mpi_venc_get_base_attr(chn_id, &attr);
     if (ret != HI_SUCCESS) {
         printf("get static attr fail with ret %d!\n", ret);
         return HI_FAILURE;
@@ -313,7 +313,7 @@ hi_s32 sample_venc_set_static_attr(sample_venc_chn_config* p_chn_config, hi_s32 
     attr.type = p_chn_config->dyn_attr->proto_type[dyn_set_num];
     attr.profile = p_chn_config->dyn_attr->profile[dyn_set_num];
     attr.pack_mode = p_chn_config->dyn_attr->pack_mode[dyn_set_num];
-    ret = jl_mpi_venc_set_static_attr(chn_id, &attr);
+    ret = jl_mpi_venc_set_base_attr(chn_id, &attr);
     if (ret != HI_SUCCESS) {
         printf("set static attr fail with ret %d!\n", ret);
         return HI_FAILURE;
@@ -323,9 +323,9 @@ hi_s32 sample_venc_set_static_attr(sample_venc_chn_config* p_chn_config, hi_s32 
 
 hi_s32 sample_venc_set_dyn_attr(sample_venc_chn_config* p_chn_config, hi_s32 chn_id, hi_s32 dyn_set_num)
 {
-    jl_venc_dyn_attr attr;
+    jl_venc_base_param attr;
     hi_s32 ret;
-    ret = jl_mpi_venc_get_dyn_attr(chn_id, &attr);
+    ret = jl_mpi_venc_get_base_param(chn_id, &attr);
     if (ret != HI_SUCCESS) {
         printf("get dyn attr fail with ret %d!\n", ret);
         return HI_FAILURE;
@@ -338,7 +338,7 @@ hi_s32 sample_venc_set_dyn_attr(sample_venc_chn_config* p_chn_config, hi_s32 chn
     attr.rc_attr.mad_attr.mad_origin_idx = p_chn_config->dyn_attr->rc_attr->mad_attr->mad_origin_idx[dyn_set_num];
     attr.rc_attr.sc_window.hor_width = p_chn_config->dyn_attr->rc_attr->win_hor_width[dyn_set_num];
     attr.rc_attr.sc_window.ver_height = p_chn_config->dyn_attr->rc_attr->win_ver_height[dyn_set_num];
-    ret = jl_mpi_venc_set_dyn_attr(chn_id, &attr);
+    ret = jl_mpi_venc_set_base_param(chn_id, &attr);
     if (ret != HI_SUCCESS) {
         printf("set dyn attr fail with ret %d!\n", ret);
         return HI_FAILURE;
