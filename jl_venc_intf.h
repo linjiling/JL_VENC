@@ -56,16 +56,16 @@ td_s32 jl_mpi_venc_get_aiseg_attr(ot_venc_chn chn, jl_venc_aiseg_attr *attr);
 
 /* START状态下接口 可选 */
 // 必须功能的动态参数, 有即可生效的也可以延迟生效，生效前用最后一次设置的值
-td_s32 jl_mpi_venc_set_base_param(ot_venc_chn chn, const jl_venc_base_param *attr);
-td_s32 jl_mpi_venc_get_base_param(ot_venc_chn chn, jl_venc_base_param *attr);
+td_s32 jl_mpi_venc_set_base_param(ot_venc_chn chn, const jl_venc_base_param *param);
+td_s32 jl_mpi_venc_get_base_param(ot_venc_chn chn, jl_venc_base_param *param);
 
 // 可选功能动态参数
-td_s32 jl_mpi_venc_set_mse_param(ot_venc_chn chn, const jl_venc_mse_param *attr);
-td_s32 jl_mpi_venc_get_mse_param(ot_venc_chn chn, jl_venc_mse_param *attr);
-td_s32 jl_mpi_venc_set_deblur_param(ot_venc_chn chn, const jl_venc_deblur_param *attr);
-td_s32 jl_mpi_venc_get_deblur_param(ot_venc_chn chn, jl_venc_deblur_param *attr);
-td_s32 jl_mpi_venc_set_md_param(ot_venc_chn chn, const jl_venc_md_param *md_param);
-td_s32 jl_mpi_venc_get_md_param(ot_venc_chn chn, jl_venc_md_param *md_param);
+td_s32 jl_mpi_venc_set_mse_param(ot_venc_chn chn, const jl_venc_mse_param *param);
+td_s32 jl_mpi_venc_get_mse_param(ot_venc_chn chn, jl_venc_mse_param *param);
+td_s32 jl_mpi_venc_set_deblur_param(ot_venc_chn chn, const jl_venc_deblur_param *param);
+td_s32 jl_mpi_venc_get_deblur_param(ot_venc_chn chn, jl_venc_deblur_param *param);
+td_s32 jl_mpi_venc_set_md_param(ot_venc_chn chn, const jl_venc_md_param *param);
+td_s32 jl_mpi_venc_get_md_param(ot_venc_chn chn, jl_venc_md_param *param);
 
 /* STOP状态下接口 可选 */
 
