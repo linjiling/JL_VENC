@@ -31,18 +31,20 @@ td_s32 jl_mpi_venc_destroy_chn(ot_venc_chn chn);
 td_s32 jl_mpi_venc_get_stream(ot_venc_chn chn, jl_venc_stream *stream, td_s32 milli_sec);
 td_s32 jl_mpi_venc_release_stream(ot_venc_chn chn, const jl_venc_stream *stream);
 td_s32 jl_mpi_venc_send_frame(ot_venc_chn chn, const jl_venc_frame *frame, td_s32 milli_sec);
+td_s32 jl_mpi_venc_query_status(ot_venc_chn chn, jl_venc_chn_status *status);
 // 可选接口
 td_s32 jl_mpi_venc_get_fd(ot_venc_chn chn, hi_s32 *fd);
+td_s32 jl_mpi_venc_send_user_data(ot_venc_chn chn, td_u8 *data, td_u32 len);
 
 /* IDLE状态下接口 可选 */
 // 设置必须功能的静态参数，是可能会导致内部状态状态重新开始，也可能资源重新申请
-td_s32 jl_mpi_venc_set_static_attr(ot_venc_chn chn, const jl_venc_stat_attr *attr);
-td_s32 jl_mpi_venc_get_static_attr(ot_venc_chn chn, jl_venc_stat_attr *attr);
+td_s32 jl_mpi_venc_set_base_attr(ot_venc_chn chn, const jl_venc_base_attr *attr);
+td_s32 jl_mpi_venc_get_base_attr(ot_venc_chn chn, jl_venc_base_attr *attr);
 // 可选功能静态参数，内部状态重新开始
-td_s32 jl_mpi_venc_get_privacy_static_attr(ot_venc_chn chn, jl_venc_stat_attr *attr);
-td_s32 jl_mpi_venc_set_privacy_static_attr(ot_venc_chn chn, jl_venc_stat_attr *attr);
-td_s32 jl_mpi_venc_get_ssvc_static_attr(ot_venc_chn chn, jl_venc_stat_attr *attr);
-td_s32 jl_mpi_venc_set_ssvc_static_attr(ot_venc_chn chn, jl_venc_stat_attr *attr);
+td_s32 jl_mpi_venc_get_privacy_static_attr(ot_venc_chn chn, jl_venc_base_attr *attr);
+td_s32 jl_mpi_venc_set_privacy_static_attr(ot_venc_chn chn, jl_venc_base_attr *attr);
+td_s32 jl_mpi_venc_get_ssvc_static_attr(ot_venc_chn chn, jl_venc_base_attr *attr);
+td_s32 jl_mpi_venc_set_ssvc_static_attr(ot_venc_chn chn, jl_venc_base_attr *attr);
 td_s32 jl_mpi_venc_set_user_data_attr(ot_venc_chn chn, const jl_venc_user_data_attr *attr);
 td_s32 jl_mpi_venc_get_user_data_attr(ot_venc_chn chn, jl_venc_user_data_attr *attr);
 td_s32 jl_mpi_venc_set_uservb_attr(ot_venc_chn chn, const jl_venc_usrvb_attr *attr);
@@ -54,21 +56,16 @@ td_s32 jl_mpi_venc_get_aiseg_attr(ot_venc_chn chn, jl_venc_aiseg_attr *attr);
 
 /* START状态下接口 可选 */
 // 必须功能的动态参数, 有即可生效的也可以延迟生效，生效前用最后一次设置的值
-td_s32 jl_mpi_venc_set_dyn_attr(ot_venc_chn chn, const jl_venc_dyn_attr *attr);
-td_s32 jl_mpi_venc_get_dyn_attr(ot_venc_chn chn, jl_venc_dyn_attr *attr);
+td_s32 jl_mpi_venc_set_base_param(ot_venc_chn chn, const jl_venc_base_param *attr);
+td_s32 jl_mpi_venc_get_base_param(ot_venc_chn chn, jl_venc_base_param *attr);
 
 // 可选功能动态参数
-td_s32 jl_mpi_venc_send_user_data(ot_venc_chn chn, td_u8 *data, td_u32 len);
 td_s32 jl_mpi_venc_set_mse_param(ot_venc_chn chn, const jl_venc_mse_param *attr);
 td_s32 jl_mpi_venc_get_mse_param(ot_venc_chn chn, jl_venc_mse_param *attr);
 td_s32 jl_mpi_venc_set_deblur_param(ot_venc_chn chn, const jl_venc_deblur_param *attr);
-td_s32 jl_mpi_venc_get_deblu_param(ot_venc_chn chn, jl_venc_deblur_param *attr);
+td_s32 jl_mpi_venc_get_deblur_param(ot_venc_chn chn, jl_venc_deblur_param *attr);
 td_s32 jl_mpi_venc_set_md_param(ot_venc_chn chn, const jl_venc_md_param *md_param);
 td_s32 jl_mpi_venc_get_md_param(ot_venc_chn chn, jl_venc_md_param *md_param);
-
-/* START状态下接口 必须 */
-// 获取当前编码通道内部状态信息
-td_s32 jl_mpi_venc_query_status(ot_venc_chn chn, jl_venc_chn_status *status);
 
 /* STOP状态下接口 可选 */
 
