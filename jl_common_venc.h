@@ -88,7 +88,7 @@ typedef struct {
     union {
         jl_venc_svac3_stat_attr svac3_stat_attr; /* AUTO:ot_payload_type:JL_PT_SVAC3; */
     };
-} jl_venc_stat_attr;
+} jl_venc_base_attr;
 
 typedef enum {
     JL_VENC_RC_MODE_CBR = 0,
@@ -131,7 +131,7 @@ typedef struct {
     jl_venc_stm_mode stm_mode;
     jl_venc_frame_mode frame_send_mode;
     jl_venc_rc_attr rc_attr;
-} jl_venc_dyn_attr;
+} jl_venc_base_param;
 
 typedef struct {
     td_phys_addr_t phys_addr;
