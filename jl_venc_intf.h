@@ -49,8 +49,8 @@ td_s32 jl_mpi_venc_set_user_data_attr(ot_venc_chn chn, const jl_venc_user_data_a
 td_s32 jl_mpi_venc_get_user_data_attr(ot_venc_chn chn, jl_venc_user_data_attr *attr);
 td_s32 jl_mpi_venc_set_uservb_attr(ot_venc_chn chn, const jl_venc_usrvb_attr *attr);
 td_s32 jl_mpi_venc_get_uservb_attr(ot_venc_chn chn, jl_venc_usrvb_attr *attr);
-td_s32 jl_mpi_venc_set_ext_ref_attr(ot_venc_chn chn, const jl_venc_ext_ref_attr *attr);
-td_s32 jl_mpi_venc_get_ext_ref_attr(ot_venc_chn chn, jl_venc_ext_ref_attr *attr);
+td_s32 jl_mpi_venc_set_adv_ref_attr(ot_venc_chn chn, const jl_venc_adv_ref_attr *attr);
+td_s32 jl_mpi_venc_get_adv_ref_attr(ot_venc_chn chn, jl_venc_adv_ref_attr *attr);
 td_s32 jl_mpi_venc_set_aiseg_attr(ot_venc_chn chn, jl_venc_aiseg_attr *attr);
 td_s32 jl_mpi_venc_get_aiseg_attr(ot_venc_chn chn, jl_venc_aiseg_attr *attr);
 
